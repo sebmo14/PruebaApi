@@ -1,111 +1,66 @@
 package com.example.demo;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Repository;
-
 @Repository
 public class UsuarioRepository {
-    
-    // Simulamos una base de datos con un Map
-    private final Map<String, Usuario> baseDeDatos = new HashMap<>();
-    
-    // Simulamos almacén de tokens de autorización
-    private final Map<String, String> authTokens = new HashMap<>();
-    
-    // Simulamos almacén de permisos de usuario
-    private final Map<String, List<String>> permisos = new HashMap<>();
-    
-    // Simulamos almacén de accesos de usuario
-    private final Map<String, List<Map<String, Object>>> accesos = new HashMap<>();
-    
-    // Simulamos almacén de preferencias de usuario
-    private final Map<String, Map<String, Object>> preferencias = new HashMap<>();
-    
-    // Simulamos histórico de estados
-    private final Map<String, List<Map<String, Object>>> statusHistorial = new HashMap<>();
-    
-    // Simulamos documentos de usuario
-    private final Map<String, List<Map<String, Object>>> documentos = new HashMap<>();
-    
-    // Guardar un usuario
+    private final List<Usuario> baseDeDatos = new ArrayList<>();
+    private final List<String> authTokens = new ArrayList<>();
     public Usuario save(Usuario usuario) {
-        baseDeDatos.put(usuario.getId(), usuario);
-        // Inicializamos estructuras relacionadas
-        authTokens.put("token-" + usuario.getId(), usuario.getId());
-        permisos.put(usuario.getId(), new ArrayList<>());
-        accesos.put(usuario.getId(), new ArrayList<>());
-        preferencias.put(usuario.getId(), new HashMap<>());
-        statusHistorial.put(usuario.getId(), new ArrayList<>());
-        documentos.put(usuario.getId(), new ArrayList<>());
+        baseDeDatos.add(usuario);
+        authTokens.add(usuario.getId());
         return usuario;
     }
-    
-    // Encontrar usuario por ID
     public Usuario findById(String id) {
-        return baseDeDatos.get(id);
+        for (Usuario usuario : baseDeDatos) {
+            if (usuario.getId().equals(id)) {
+                return usuario;
+            }
+        }
+        return null;
     }
-    
-    // Listar todos los usuarios
     public List<Usuario> findAll() {
-        return new ArrayList<>(baseDeDatos.values());
+        return new ArrayList<>(baseDeDatos);
     }
-    
-    // Eliminar un usuario
     public void deleteById(String id) {
-        baseDeDatos.remove(id);
-        authTokens.remove("token-" + id);
-        permisos.remove(id);
-        accesos.remove(id);
-        preferencias.remove(id);
-        statusHistorial.remove(id);
-        documentos.remove(id);
+        for (int i = 0; i < baseDeDatos.size(); i++) {
+            if (baseDeDatos.get(i).getId().equals(id)) {
+                baseDeDatos.remove(i);
+                return;
+            }
+        }
     }
-    
-    // Actualizar un usuario
     public Usuario update(Usuario usuario) {
-        if (baseDeDatos.containsKey(usuario.getId())) {
-            baseDeDatos.put(usuario.getId(), usuario);
-            return usuario;
+        for (int i = 0; i < baseDeDatos.size(); i++) {
+            if (baseDeDatos.get(i).getId().equals(usuario.getId())) {
+                baseDeDatos.set(i, usuario);
+                return usuario;
+            }
         }
         return null;
     }
-    
-    // Buscar usuarios por filtros
-    public List<Usuario> buscarPorFiltros(String nombre, String email, int edad) {
-        return baseDeDatos.values().stream()
-                .filter(u -> nombre == null || u.getNombre().contains(nombre))
-                .filter(u -> email == null || u.getEmail().contains(email))
-                .filter(u -> edad == 0 || u.getEdad() == edad)
-                .collect(Collectors.toList());
+    public List<Usuario> buscarPorFiltros(String nombre, String email) {
+        List<Usuario> resultado = new ArrayList<>();
+        for (Usuario usuario : baseDeDatos) {
+            boolean coincideNombre = (nombre == null ||
+                    usuario.getNombre().contains(nombre));
+            boolean coincideEmail = (email == null ||
+                    usuario.getEmail().contains(email));
+            if (coincideNombre && coincideEmail) {
+                resultado.add(usuario);
+            }
+        }
+        return resultado;
     }
-    
-    
-    // Encontrar usuario por token de autorización
-    public Usuario findByAuthToken(String authToken) {
-        String userId = authTokens.get(authToken);
-        if (userId != null) {
-            return baseDeDatos.get(userId);
+    public String findByAuthToken(String authToken) {
+        for (String token : authTokens) {
+            if (token.equals(authToken)) {
+                return "Ud puede crear productos";
+            }
         }
         return null;
     }
-    
-    // Establecer permisos para un usuario
-    public void setPermisos(String id, List<String> nuevosPermisos) {
-        permisos.put(id, nuevosPermisos);
-    }
-    
-    // Registrar un nuevo acceso
-    public void registrarAcceso(String id, Map<String, Object> nuevoAcceso) {
-        List<Map<String, Object>> accesosUsuario = accesos.getOrDefault(id, new ArrayList<>());
-        accesosUsuario.add(0, nuevoAcceso); // Añadir al principio (más reciente)
-        accesos.put(id, accesosUsuario);
-    }
-    
-    
-    
 }
+
+    
